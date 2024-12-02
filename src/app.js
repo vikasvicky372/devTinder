@@ -7,6 +7,7 @@ const app = express();
 
 app.use(express.json());
 
+//adding new user
 app.post("/signUp", async (req,res) => {
 
 console.log(req.body);
@@ -20,6 +21,7 @@ res.status(400).send("error occured while saving the user: "+ err);
 }
 })
 
+//getting users for matched filter
 app.get("/user", async (req,res) => {
 const userEmail = req?.body?.emailId;
 
@@ -36,6 +38,7 @@ res.status(500).send("Something went wrong");
 
 })
 
+//getting all the users
 app.get("/feed", async (req,res) => {
 
 try {
@@ -51,39 +54,50 @@ app.delete("/user", async (req,res) => {
 const userId = req?.body?.userId;
 
 try{
-    // await User.deleteOne({_id: userId});
+// await User.deleteOne({_id: userId});
 
-    await User.findByIdAndDelete(userId);
-    res.send("deleted successfully");
+await User.findByIdAndDelete(userId);
+res.send("deleted successfully");
 } catch(err) {
-    res.status(404).send("user not found");
+res.status(404).send("user not found");
 }
 })
 
 //update the user
-app.patch("/user",async (req,res) => {
-const userEmail = req?.body?.emailId;
+app.patch("/user/:userEmail",async (req,res) => {
+const userEmail = req.params?.userEmail;
+//const userEmail = req?.body?.emailId;
 //console.log(req.body);
+const data = req.body;
 
 try{
-    const updatedUser = await User.findOneAndUpdate({emailId: userEmail}, req.body,
-        {returnDocument:'after',
-        runValidators: true
-    });
-    //console.log(updatedUser);
-    res.send(updatedUser);
+const ALLOWED_UPDATES = ["age", "phoneNumber", "gender", "photoURL", "skills", "bio"];
+
+const isUpdateAllowed = Object.keys(data).every(key => ALLOWED_UPDATES.includes(key));
+
+if(!isUpdateAllowed){
+throw new Error("update not allowed!");
+}
+
+const updatedUser = await User.findOneAndUpdate({emailId: userEmail}, data,
+    {returnDocument:'after',
+    runValidators: true
+});
+//console.log(updatedUser);
+res.send(updatedUser);
 } catch(err) {
-    res.status(500).send("Unable to update the user: "+ err.message);
+res.status(500).send("Unable to update the user: "+ err.message);
 }
 })
 
+//getting only one user
 app.get("/oneUser", async (req,res) => {
 const userEmail = req?.body?.emailId;
 
 try{
 const user = await User.findOne({emailId: userEmail});
 
-    res.send(user);
+res.send(user);
 
 } catch(err) {
 res.status(500).send("Something went wrong");
