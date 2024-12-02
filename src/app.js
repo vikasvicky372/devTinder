@@ -46,6 +46,34 @@ try {
 }
 })
 
+//delete the user
+app.delete("/user", async (req,res) => {
+    const userId = req?.body?.userId;
+
+    try{
+       // await User.deleteOne({_id: userId});
+
+        await User.findByIdAndDelete(userId);
+        res.send("deleted successfully");
+    } catch(err) {
+        res.status(404).send("user not found");
+    }
+})
+
+//update the user
+app.patch("/user",async (req,res) => {
+    const userEmail = req?.body?.emailId;
+    //console.log(req.body);
+
+    try{
+        const updatedUser = await User.findOneAndUpdate({emailId: userEmail}, req.body,{returnDocument:'after'});
+        //console.log(updatedUser);
+        res.send(updatedUser);
+    } catch(err) {
+        res.status(500).send("Unable to update the user");
+    }
+})
+
 app.get("/oneUser", async (req,res) => {
 const userEmail = req?.body?.emailId;
 
