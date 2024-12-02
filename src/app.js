@@ -16,7 +16,7 @@ try{
 await user.save(); 
 res.send("user saved successfully");
 } catch (err) {
-res.status(400).send("error occured while saving the user"+ err);
+res.status(400).send("error occured while saving the user: "+ err);
 }
 })
 
@@ -26,9 +26,9 @@ const userEmail = req?.body?.emailId;
 try{
 const users = await User.find({emailId: userEmail});
 if(users.length ===0){
-    res.status(404).send("User not found");
+res.status(404).send("User not found");
 } else{
-    res.send(users);
+res.send(users);
 }
 } catch(err) {
 res.status(500).send("Something went wrong");
@@ -39,51 +39,54 @@ res.status(500).send("Something went wrong");
 app.get("/feed", async (req,res) => {
 
 try {
-    const users = await User.find({});
-    res.send(users);
+const users = await User.find({});
+res.send(users);
 }catch(err) {
-    res.status(500).send("Something went wrong");
+res.status(500).send("Something went wrong");
 }
 })
 
 //delete the user
 app.delete("/user", async (req,res) => {
-    const userId = req?.body?.userId;
+const userId = req?.body?.userId;
 
-    try{
-       // await User.deleteOne({_id: userId});
+try{
+    // await User.deleteOne({_id: userId});
 
-        await User.findByIdAndDelete(userId);
-        res.send("deleted successfully");
-    } catch(err) {
-        res.status(404).send("user not found");
-    }
+    await User.findByIdAndDelete(userId);
+    res.send("deleted successfully");
+} catch(err) {
+    res.status(404).send("user not found");
+}
 })
 
 //update the user
 app.patch("/user",async (req,res) => {
-    const userEmail = req?.body?.emailId;
-    //console.log(req.body);
+const userEmail = req?.body?.emailId;
+//console.log(req.body);
 
-    try{
-        const updatedUser = await User.findOneAndUpdate({emailId: userEmail}, req.body,{returnDocument:'after'});
-        //console.log(updatedUser);
-        res.send(updatedUser);
-    } catch(err) {
-        res.status(500).send("Unable to update the user");
-    }
+try{
+    const updatedUser = await User.findOneAndUpdate({emailId: userEmail}, req.body,
+        {returnDocument:'after',
+        runValidators: true
+    });
+    //console.log(updatedUser);
+    res.send(updatedUser);
+} catch(err) {
+    res.status(500).send("Unable to update the user: "+ err.message);
+}
 })
 
 app.get("/oneUser", async (req,res) => {
 const userEmail = req?.body?.emailId;
 
 try{
-    const user = await User.findOne({emailId: userEmail});
-    
-        res.send(user);
+const user = await User.findOne({emailId: userEmail});
+
+    res.send(user);
 
 } catch(err) {
-    res.status(500).send("Something went wrong");
+res.status(500).send("Something went wrong");
 }
 
 })
