@@ -4,16 +4,28 @@ const {connectDB} = require("./config/database");
 const User = require("./models/user");
 //creating server from express
 const app = express();
-
+const {validateSignUpData} = require("./utils/validation");
+const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const {createJwtToken} = require("./utils/jwtToken");
+const { userAuth } = require("./middlewares/auth");
 app.use(express.json());
+app.use(cookieParser());
 
 //adding new user
 app.post("/signUp", async (req,res) => {
 
+    
+try{
+//validation of data
+validateSignUpData(req);
+//encrypt the password
+const {password} = req.body;
+const hashedPassword = await bcrypt.hash(password, 10);
+req.body.password = hashedPassword;
 console.log(req.body);
 const user = new User(req.body);
 
-try{
 await user.save(); 
 res.send("user saved successfully");
 } catch (err) {
@@ -21,8 +33,36 @@ res.status(400).send("error occured while saving the user: "+ err);
 }
 })
 
+//logging the user
+
+app.post("/login", async(req,res)=> {
+
+    try{
+    const {emailId,password} = req.body;
+    if(!emailId || !password){
+        throw new Error("emailid and password is mandatory");
+    }
+    const userObject = await User.findOne({emailId: emailId});
+    if(!userObject){
+        throw new Error("Invalid credentials");
+    }
+    const isValidPasword = bcrypt.compare(password, userObject.password);
+    if(isValidPasword){
+        const token = createJwtToken(userObject._id);
+        res.cookie("token", token,{
+            expires: new Date(Date.now() + 8 * 3600000) // cookie will be removed after 8 hours
+          });
+        res.send("user logged in successfully");
+    }else{
+        throw new Error("Invalid credentials");
+    }
+} catch (err) {
+    res.status(400).send("error while logging in: "+ err);
+    }
+})
+
 //getting users for matched filter
-app.get("/user", async (req,res) => {
+app.get("/user", userAuth, async (req,res) => {
 const userEmail = req?.body?.emailId;
 
 try{
@@ -37,6 +77,24 @@ res.status(500).send("Something went wrong");
 }
 
 })
+
+app.get("/profile", userAuth,async (req,res) => {
+    const userEmail = req?.body?.emailId;
+    
+    try{
+    const cookies = req.cookies;
+    console.log(cookies);
+    const users = await User.find({emailId: userEmail});
+    if(users.length ===0){
+    res.status(404).send("User not found");
+    } else{
+    res.send(users);
+    }
+    } catch(err) {
+    res.status(500).send("Something went wrong");
+    }
+    
+    })
 
 //getting all the users
 app.get("/feed", async (req,res) => {
