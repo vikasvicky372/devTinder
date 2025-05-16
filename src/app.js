@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const {createJwtToken} = require("./utils/jwtToken");
 const { userAuth } = require("./middlewares/auth");
+const user = require("./models/user");
 app.use(express.json());
 app.use(cookieParser());
 
@@ -46,9 +47,9 @@ app.post("/login", async(req,res)=> {
     if(!userObject){
         throw new Error("Invalid credentials");
     }
-    const isValidPasword = bcrypt.compare(password, userObject.password);
+    const isValidPasword = await userObject.validatePassword(password);
     if(isValidPasword){
-        const token = createJwtToken(userObject._id);
+        const token =  userObject.getJwtToken();
         res.cookie("token", token,{
             expires: new Date(Date.now() + 8 * 3600000) // cookie will be removed after 8 hours
           });
@@ -79,17 +80,12 @@ res.status(500).send("Something went wrong");
 })
 
 app.get("/profile", userAuth,async (req,res) => {
-    const userEmail = req?.body?.emailId;
     
     try{
     const cookies = req.cookies;
     console.log(cookies);
-    const users = await User.find({emailId: userEmail});
-    if(users.length ===0){
-    res.status(404).send("User not found");
-    } else{
-    res.send(users);
-    }
+    const user = req.user;
+    res.send(user);
     } catch(err) {
     res.status(500).send("Something went wrong");
     }
