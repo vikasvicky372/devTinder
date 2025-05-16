@@ -56,6 +56,16 @@ authRouter.post("/login", async(req,res)=> {
     }
 })
 
+//logging out the user
+authRouter.post("/logout", userAuth, async(req,res) => {
+    try{
+        res.clearCookie("token");  
+        res.send("user logged out successfully");
+    }catch(err){
+        res.status(500).send("error while logging out: "+ err.message);
+    }
+})
+
 //getting users for matched filter
 authRouter.get("/user", userAuth, async (req,res) => {
     const userEmail = req?.body?.emailId;
