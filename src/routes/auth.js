@@ -6,7 +6,9 @@ const {validateSignUpData} = require("../utils/validation");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const {userAuth} = require("../middlewares/auth");
+const user = require('../models/user');
 
+const USER_SAFE_DATA = "firstName lastName photoURL skills bio";
 //adding new user
 authRouter.post("/signUp", async (req,res) => {
 
@@ -37,17 +39,19 @@ authRouter.post("/login", async(req,res)=> {
     if(!emailId || !password){
         throw new Error("emailid and password is mandatory");
     }
-    const userObject = await User.findOne({emailId: emailId});
-    if(!userObject){
+    const user = await User.findOne({emailId: emailId});
+    if(!user){
         throw new Error("Invalid credentials");
     }
-    const isValidPasword = await userObject.validatePassword(password);
+    const isValidPasword = await user.validatePassword(password);
     if(isValidPasword){
-        const token =  userObject.getJwtToken();
+        const token =  user.getJwtToken();
         res.cookie("token", token,{
             expires: new Date(Date.now() + 8 * 3600000) // cookie will be removed after 8 hours
           });
-        res.send("user logged in successfully");
+        res.json({
+            user
+        });
     }else{
         throw new Error("Invalid credentials");
     }
@@ -60,7 +64,9 @@ authRouter.post("/login", async(req,res)=> {
 authRouter.post("/logout", userAuth, async(req,res) => {
     try{
         res.clearCookie("token");  
-        res.send("user logged out successfully");
+        res.json({
+            message: "Logged out successfully"
+        });
     }catch(err){
         res.status(500).send("error while logging out: "+ err.message);
     }
