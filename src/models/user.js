@@ -33,7 +33,6 @@ min: 18,
 },
 phoneNumber: {
 type: String,
-required: true,
 // match: [/^[0-9]{10}$/, "Phone Number is not valid"]
 validate(phoneNumber) {
     if(!validator.isMobilePhone(phoneNumber ,'en-IN')){
@@ -53,7 +52,8 @@ validate(password) {
 },
 gender: {
 type: String,
-required: true,
+ enum: ["male","female", "others"],
+        messge: '{VALUE} is not a valid gender'
 },
 photoURL: {
 type: String,

@@ -33,7 +33,7 @@ profileRouter.delete("/user", async (req,res) => {
     })
 
 //update the user
-profileRouter.patch("/profile/edit",userAuth,async (req,res) => {
+profileRouter.put("/profile/edit",userAuth,async (req,res) => {
     
     try{
     const ALLOWED_UPDATES = ["age", "phoneNumber", "gender", "photoURL", "skills", "bio","firstName", "lastName"];
