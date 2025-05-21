@@ -1,3 +1,5 @@
+
+require("dotenv").config();
 //importing express 
 const express = require("express");
 const {connectDB} = require("./config/database");

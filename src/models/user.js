@@ -80,7 +80,7 @@ default: "This is the default bio"
 { timestamps: true });
 userSchema.methods.getJwtToken =  function() {
     const user = this;
-    const token =  jwt.sign({ id: user._id }, "DEVTINDER@2000", {
+    const token =  jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
         expiresIn: "1d",
     });
     return token;
