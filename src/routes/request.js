@@ -69,8 +69,6 @@ requestRouter.post(
               — The DevConnects Team`
         );
       }
-
-      console.log(response);
       res.status(201).json({
         message: `${req.user.firstName} is ${status} in ${user.firstName}`,
         data,

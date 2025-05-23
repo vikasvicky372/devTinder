@@ -7,6 +7,8 @@ return token;
 }
 
 const verifyJwtToken = (token) => {
+    console.log("Token: ", token);
+    console.log("Secret Key: ", process.env.JWT_SECRET_KEY);
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     const { id } = decoded;
     return id;

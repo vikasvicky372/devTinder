@@ -18,6 +18,8 @@ const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const cors = require("cors");
 require("./utils/cronJob");
+const {createServer} = require("http");
+const initializeSocket = require("./utils/socket");
 
 
 app.use(cors({
@@ -60,9 +62,13 @@ res.status(500).send("Something went wrong");
 
 })
 
+const server = createServer(app);
+initializeSocket(server);
+
+
 connectDB().then(()=>{
 console.log("database connected succesfully")
-app.listen(1234, () => {
+server.listen(1234, () => {
 console.log("server is succesfully running on port 1234");
 });
 }).catch(
