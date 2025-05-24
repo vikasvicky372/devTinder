@@ -2,6 +2,7 @@ const  socket = require("socket.io");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { verifyJwtToken } = require("./jwtToken");
+const Chat = require("../models/chat");
 
 const createSecretRoomId =(fromUserId, targetUserId) => {
   return crypto.createHash("sha256").update([fromUserId,targetUserId].sort().join("$")).digest("hex");
@@ -36,10 +37,30 @@ const initializeSocket = (server) => {
         socket.join(roomId);
     });
 
-    socket.on("sendMessage", ({fromName, fromUserId, targetUserId, text}) => {
-      const roomId = createSecretRoomId(fromUserId, targetUserId);
-      console.log(`User ${fromName} sent message to ${targetUserId}: ${text}`);
-      io.to(roomId).emit("messageReceived", {fromName, text}  );
+    socket.on("sendMessage", async ({firstName,lastName, fromUserId, targetUserId, text}) => {
+      
+
+      //save chat in database
+      try{
+        const roomId = createSecretRoomId(fromUserId, targetUserId);
+      console.log(`User ${firstName} ${lastName} sent message to ${targetUserId}: ${text}`);
+        let chat = await Chat.findOne({
+          participants:{ $all: [fromUserId, targetUserId] }
+        });
+        if(!chat){
+          chat = new Chat({
+            participants:[fromUserId, targetUserId],
+            messages: []
+          });
+        }
+        chat.messages.push({senderId:fromUserId, text});
+        await chat.save();
+        io.to(roomId).emit("messageReceived", {firstName,lastName, id:fromUserId, text}  );
+      }catch(err){
+        console.log("Error in saving chat: ", err.message);
+      }
+
+      
     });
 
     socket.on("disconnect", () => {});
