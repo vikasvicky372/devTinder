@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { userAuth } = require("../middlewares/auth");
 const user = require("../models/user");
+const sendEmail = require("../utils/sendEmail");
 
 const USER_SAFE_DATA = "firstName lastName photoURL skills bio";
 //adding new user
@@ -25,6 +26,26 @@ authRouter.post("/signUp", async (req, res) => {
     res.cookie("token", token, {
       expires: new Date(Date.now() + 8 * 3600000), // cookie will be removed after 8 hours
     });
+    //send email to the user
+    const emailData = {
+      subject: "Welcome to Our Platform",
+      text: (htmlContent = `
+  <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <h2>Hello ${data.firstName},</h2>
+    <p>Thank you for signing up! We're excited to have you on board.</p>
+    <p>Best regards,<br>The Team</p>
+  </div>
+`),
+      to: data.emailId,
+      from: "support@devconnects.in",
+    };
+    const emailResponse = await sendEmail.run(
+      emailData.subject,
+      emailData.text,
+      emailData.to,
+      emailData.from
+    );
+    console.log("Email sent successfully:", emailResponse);
     res.json({ message: "Sign up successfull", data });
   } catch (err) {
     res.status(400).send("error occured while saving the user: " + err);

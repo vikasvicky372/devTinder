@@ -19,6 +19,7 @@ requestRouter.post(
         });
       }
       const fromUserId = req.user._id;
+      const senderEmail = req.user.emailId;
       const existingRequest = await ConnectionRequest.findOne({
         $or: [
           { fromUserId, toUserId },
@@ -44,6 +45,7 @@ requestRouter.post(
         status,
       });
       const data = await request.save();
+
       if (status === "interested") {
         const response = await sendEmail.run(
           `You sent a connection request to ${user.firstName}`,
@@ -54,7 +56,9 @@ requestRouter.post(
               We'll notify you if they respond. Until then, keep exploring and building your network!
               
               Cheers,  
-              — The DevConnects Team`
+              — The DevConnects Team`,
+              senderEmail,
+              user.emailId
         );
       } else if (status === "ignored") {
         const response = await sendEmail.run(
@@ -66,7 +70,9 @@ requestRouter.post(
               If you change your mind, you can always connect with them later!
               
               Cheers,  
-              — The DevConnects Team`
+              — The DevConnects Team`,
+              senderEmail,
+              user.emailId
         );
       }
       res.status(201).json({

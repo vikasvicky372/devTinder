@@ -35,7 +35,9 @@ cron.schedule('0 8 * * *', async () => {
               Please log in to your account (${email}) to view the request and take action — you can accept or ignore it.
               
               Happy connecting,  
-              — The DevConnects Team`
+              — The DevConnects Team`,
+              "support@devconnects.in",
+              email
               );
         }
     } catch(err){

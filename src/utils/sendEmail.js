@@ -33,14 +33,14 @@ const createSendEmailCommand = (toAddress, fromAddress, subject, body ) => {
   });
 };
 
-const run = async (subject, body) => {
+const run = async (subject, body, receiverEmail, senderEmail) => {
   const sendEmailCommand = createSendEmailCommand(
-    "vikasvicky372@gmail.com",
-    "vikas@devconnects.in",
+    receiverEmail,
+    senderEmail,
     subject,
     body
   );
-
+  console.log("Sending email with command: ", sendEmailCommand);
   try {
     return await sesClient.send(sendEmailCommand);
   } catch (caught) {
